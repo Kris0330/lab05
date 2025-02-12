@@ -66,8 +66,8 @@ std::string Roster::toString() const {
     std::stringstream ss;
     ss << "{\n";
     for (int i = 0; i < numStudents; i++) {
-        ss << students[i]->toString();  // 直接輸出學生資訊
-        if (i < numStudents - 1) {  // 只有在非最後一個元素時加上換行
+        ss << students[i]->toString();  
+        if (i < numStudents - 1) {  
             ss << ",\n";
         }
     }
