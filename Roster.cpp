@@ -64,13 +64,14 @@ void Roster::sortByPerm() {
 
 std::string Roster::toString() const {
     std::stringstream ss;
-    ss << "{\n";
+    ss << "{\n"; 
     for (int i = 0; i < numStudents; i++) {
-        ss << students[i]->toString();  
-        if (i < numStudents - 1) {  
-            ss << ",\n";
+        if (i > 0) {
+            ss << ",\n";  
         }
+        ss << students[i]->toString();
     }
-    ss << "\n}";
+    ss << "\n}";  
     return ss.str();
 }
+
