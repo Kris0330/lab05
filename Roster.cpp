@@ -1,110 +1,76 @@
 #include "Roster.h"
+#include <sstream>
+#include <iostream>
+#include <algorithm>
 
-#include <cstdlib>
-#include <fstream>
-#include <cassert>
+Roster::Roster() : numStudents(0) {}
 
-Roster::Roster() {
-  // initialize to empty array
-
-  this->numStudents = 0;
-  for (int i=0; i<ROSTER_MAX; i++) {
-    this->students[i] = NULL;
-  }
-
+int Roster::getNumStudents() const {
+    return numStudents;
 }
 
-void Roster::resetRoster() {
- // To avoid memory leaks:
-  //  Recycle memory for all allocated students on roster
-  
-  while (this->numStudents > 0) {
-    delete this->students[this->numStudents - 1];
-    this->numStudents --;
-  }
-
-}
-
-void Roster::addStudentsFromFile(std::string filename) {
-  std::ifstream ifs; // the stream we will use for the input file
-  ifs.open(filename);
-  
-  if (ifs.fail()) {
-    std::cerr << "Could not open input file: "
-	      << filename << std::endl;
-    exit(2); 
-  }
-
-  // ifs is an instance of ifstream
-  // ifstream inherits from istream, 
-  //   i.e. ifs is-a istream
-
-  this->addStudentsFromStream(ifs);
-
+Student Roster::getStudentAt(int index) const {
+    if (index >= 0 && index < numStudents) {
+        return *students[index];
+    }
+    throw std::out_of_range("Index out of bounds");
 }
 
 void Roster::addStudentsFromStream(std::istream &is) {
-
-  this->resetRoster();
-
-  std::string thisLine;
-  // Try to read past the header line.
-  getline(is,thisLine);
-  if ( is.eof() || is.fail() ) {
-    std::cerr << "Unable to read first line of input stream" << std::endl;
-    exit(3);
-  }
-
-  getline(is,thisLine);
-  while (  !is.eof() && !is.fail() ) {
-    // If we get here, it means the most recent attempt to read succeeded!
-    // So do something with thisLine
-    
-    Student *sPtr = new Student(thisLine);
-    this->students[this->numStudents] = sPtr;
-    this->numStudents++;
-    
-    // try to read another line
-    getline(is,thisLine);
-  } // end while
-
+    std::string line;
+    bool firstLine = true;
+    while (std::getline(is, line)) {
+        if (firstLine) {
+            firstLine = false;
+            continue;
+        }
+        if (numStudents < ROSTER_MAX) {
+            students[numStudents] = new Student(line);
+            numStudents++;
+        } else {
+            std::cerr << "Roster is full, cannot add more students!" << std::endl;
+            break;
+        }
+    }
 }
 
-int Roster::getNumStudents() const { 
-  return -999; // stub
-}
-
-Student Roster::getStudentAt(int index) const { 
-  return Student(-999,"Stubbi","Stubsdottir"); 
-}
-
-std::string Roster::toString() const {
-  std::string result = "{\n";
-  
-  result += "STUB!!!!";   // @@@ RESTORE THIS 
-
-  result += "}\n";
-  return result;
-
-}
-
-void Roster::sortByPerm() {
-  // SELECTION SORT
-  // stub does nothing
+void Roster::resetRoster() {
+    for (int i = 0; i < numStudents; i++) {
+        delete students[i];
+    }
+    numStudents = 0;
 }
 
 int Roster::indexOfMaxPermAmongFirstKStudents(int k) const {
-  return 0; // STUB
+    int maxIndex = 0;
+    for (int i = 1; i < k; i++) {
+        if (students[i]->getPerm() > students[maxIndex]->getPerm()) {
+            maxIndex = i;
+        }
+    }
+    return maxIndex;
 }
 
 void Roster::sortByPermHelper(int k) {
-  // swaps max perm from [0..k-1] with elem [k-1]
+    int maxIndex = indexOfMaxPermAmongFirstKStudents(k);
+    std::swap(students[maxIndex], students[k - 1]);
+}
 
+void Roster::sortByPerm() {
+    for (int i = numStudents; i > 1; i--) {
+        sortByPermHelper(i);
+    }
+}
 
-  int im = indexOfMaxPermAmongFirstKStudents(k);
-
-  // now swap the pointers between index im and index k-1
-
-  // THIS IS STILL A STUB !!!
-  
+std::string Roster::toString() const {
+    std::stringstream ss;
+    ss << "{\n";
+    for (int i = 0; i < numStudents; i++) {
+        ss << students[i]->toString();  // 直接輸出學生資訊
+        if (i < numStudents - 1) {  // 只有在非最後一個元素時加上換行
+            ss << ",\n";
+        }
+    }
+    ss << "\n}";
+    return ss.str();
 }
